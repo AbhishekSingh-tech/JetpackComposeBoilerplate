@@ -1,0 +1,232 @@
+<!-- /**
+Create a fully functional Kanban board using HTML, CSS, and JavaScript,
+all within a single file. The board should have three columns: To-Do, In Progress,
+and Done. Each column should be able to hold multiple cards, which can be added
+dynamically by the user through an "Add Card" button or form located at the top of each column.
+Cards should have a title, description, and a delete button. Users should be able to drag and drop
+cards between columns. Use CSS grid for layout and JavaScript DOM manipulation
+for interactivity. Include basic styling and transitions. Ensure that users can
+enter the card's title and description through a text input field and textarea,
+respectively, before adding it to any of the three columns. The "Add Card" form should be
+specific to each column, allowing users to add cards directly to the desired column.
+Keep the code working, concise and well-structured.
+*/ -->
+
+<!-- html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 10px;
+            padding: 20px;
+        }
+        
+        .column {
+            background-color: #f7f7f7;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .column-header h2 {
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .add-card-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f7f7f7;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .add-card-form input, .add-card-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .add-card-form button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .add-card-form button:hover {
+            background-color: #3e8e41;
+        }
+        
+        .card {
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .card-header h3 {
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .card-content {
+            padding: 10px;
+        }
+        
+        .delete-button {
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="kanban-board">
+        <div class="column">
+            <div class="column-header">
+                <h2>To-Do</h2>
+                <button class="add-card-button">Add Card</button>
+            </div>
+            <div class="add-card-form" style="display: none;">
+                <input type="text" id="todo-title" placeholder="Title">
+                <textarea id="todo-description" placeholder="Description"></textarea>
+                <button id="todo-add-button">Add Card</button>
+            </div>
+            <div class="cards" id="todo-cards"></div>
+        </div>
+        <div class="column">
+            <div class="column-header">
+                <h2>In Progress</h2>
+                <button class="add-card-button">Add Card</button>
+            </div>
+            <div class="add-card-form" style="display: none;">
+                <input type="text" id="in-progress-title" placeholder="Title">
+                <textarea id="in-progress-description" placeholder="Description"></textarea>
+                <button id="in-progress-add-button">Add Card</button>
+            </div>
+            <div class="cards" id="in-progress-cards"></div>
+        </div>
+        <div class="column">
+            <div class="column-header">
+                <h2>Done</h2>
+                <button class="add-card-button">Add Card</button>
+            </div>
+            <div class="add-card-form" style="display: none;">
+                <input type="text" id="done-title" placeholder="Title">
+                <textarea id="done-description" placeholder="Description"></textarea>
+                <button id="done-add-button">Add Card</button>
+            </div>
+            <div class="cards" id="done-cards"></div>
+        </div>
+    </div>
+
+    <script>
+        const columns = document.querySelectorAll('.column');
+        const addCardButtons = document.querySelectorAll('.add-card-button');
+        const addCardForms = document.querySelectorAll('.add-card-form');
+        const cardsContainer = document.querySelectorAll('.cards');
+
+        addCardButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                addCardForms[index].style.display = 'block';
+            });
+        });
+
+        addCardForms.forEach((form, index) => {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = form.querySelector('input').value;
+                const description = form.querySelector('textarea').value;
+                const card = createCard(title, description);
+                cardsContainer[index].appendChild(card);
+                form.style.display = 'none';
+                form.querySelector('input').value = '';
+                form.querySelector('textarea').value = '';
+            });
+        });
+
+        function createCard(title, description) {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3>${title}</h3>
+                    <button class="delete-button">Delete</button>
+                </div>
+                <div class="card-content">
+                    <p>${description}</p>
+                </div>
+            `;
+            card.querySelector('.delete-button').addEventListener('click', () => {
+                card.remove();
+            });
+            return card;
+        }
+
+        // Make cards draggable
+        cardsContainer.forEach((container) => {
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            container.addEventListener('drop', (e) => {
+                const card = e.dataTransfer.getData('text');
+                const cardElement = document.querySelector(`#${card}`);
+                container.appendChild(cardElement);
+            });
+        });
+
+        // Make cards draggable
+        document.querySelectorAll('.card').forEach((card) => {
+            card.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text', card.id);
+            });
+        });
+    </script>
+</body>
+</html>
+ 
